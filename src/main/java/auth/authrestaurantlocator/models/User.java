@@ -31,18 +31,13 @@ public class User implements UserDetails {
     private Long id;
 
     @NotBlank
-    @Size(max = 50)
     @Email
     private String email;
 
     @NotBlank
-    @Size(max = 8)
     private String password;
 
-    @NotBlank
     private ERole role;
-
-
 
 
     @Override
