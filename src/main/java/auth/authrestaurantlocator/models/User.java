@@ -39,6 +39,9 @@ public class User implements UserDetails {
 
     private ERole role;
 
+    @OneToMany(mappedBy = "user")
+    private List<Token> tokens;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
