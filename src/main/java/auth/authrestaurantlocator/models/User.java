@@ -1,11 +1,9 @@
 package auth.authrestaurantlocator.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,8 +17,9 @@ import java.util.Set;
 @AllArgsConstructor
 @Data
 @Builder
+@ToString(exclude = "tokens")
 @Entity
-@Table(name = "users",
+@Table(name = "user",
         uniqueConstraints = {
         @UniqueConstraint(columnNames = "email")
         }
@@ -39,7 +38,7 @@ public class User implements UserDetails {
 
     private ERole role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "user")
     private List<Token> tokens;
 
 

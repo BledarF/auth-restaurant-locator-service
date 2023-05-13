@@ -5,13 +5,14 @@ spring:
     password: kt7ymZwjLvtk!
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: false
     properties:
       hibernate:
         format_sql: true
+        enable_lazy_load_no_trans: true
     database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
 
 application:
   security:

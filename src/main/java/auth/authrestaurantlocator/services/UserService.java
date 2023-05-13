@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,8 +22,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.naming.AuthenticationException;
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.net.http.HttpHeaders;
+import java.sql.SQLException;
 
 @Service
 @RequiredArgsConstructor
@@ -36,6 +39,8 @@ public class UserService {
 
     private final AuthenticationManager authenticationManager;
 
+    @Autowired
+    DataSource dataSource;
 
 
     public AuthenticationResponse authenticate(LoginRequest request) {
