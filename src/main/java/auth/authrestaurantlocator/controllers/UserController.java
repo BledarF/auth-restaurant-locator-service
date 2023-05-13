@@ -5,6 +5,8 @@ import auth.authrestaurantlocator.payload.AuthenticationResponse;
 import auth.authrestaurantlocator.payload.LoginRequest;
 import auth.authrestaurantlocator.payload.RegisterRequest;
 import auth.authrestaurantlocator.services.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.naming.AuthenticationException;
+import java.io.IOException;
 import java.util.Objects;
 
 @RestController
@@ -41,6 +44,12 @@ public class UserController {
         }
         AuthenticationResponse response = userService.register(registerRequest);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh-token")
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+        userService.refreshToken(request,response);
     }
 
 }

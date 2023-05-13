@@ -1,6 +1,8 @@
 package auth.authrestaurantlocator.config;
 
 
+import auth.authrestaurantlocator.models.Token;
+import auth.authrestaurantlocator.repository.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 
 @Component
@@ -26,23 +29,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
+    private final TokenRepository tokenRepository;
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,@NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String email;
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
+
 
         jwt = authHeader.substring(7);
         email = jwtService.extractUsername(jwt);
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(email);
-            if (jwtService.isTokenValid(jwt, userDetails)) {
+            var isTokenValid = tokenRepository.findByToken(jwt)
+                    .map(t -> !t.isExpired() && !t.isRevoked())
+                    .orElse(false);
 
+            if (!isTokenValid) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (jwtService.isTokenValid(jwt, userDetails)) {
+                System.out.println("dwd");
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
