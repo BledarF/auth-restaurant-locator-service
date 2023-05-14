@@ -38,12 +38,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<User> register(@RequestBody RegisterRequest registerRequest){
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
             return ResponseEntity.badRequest().build();
         }
-        AuthenticationResponse response = userService.register(registerRequest);
-        return ResponseEntity.ok(response);
+        User savedUser = userService.register(registerRequest);
+        return ResponseEntity.ok(savedUser);
     }
 
     @PostMapping("/refresh-token")
