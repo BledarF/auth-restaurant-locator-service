@@ -15,6 +15,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -45,8 +47,7 @@ public class UserService {
 
     public AuthenticationResponse authenticate(LoginRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UsernameNotFoundException("email not found"));
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UsernameNotFoundException("user not found"));
 
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
@@ -58,16 +59,18 @@ public class UserService {
                 .build();
     }
 
-    public User register(RegisterRequest request) {
-        var user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(ERole.USER)
-                .build();
-
-        User savedUser = userRepository.save(user);
-
-       return savedUser;
+    public ResponseEntity<String> register(RegisterRequest request) {
+        try {
+            User user = User.builder()
+                    .email(request.getEmail())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(ERole.USER)
+                    .build();
+            userRepository.save(user);
+            return ResponseEntity.ok("User registered!");
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.badRequest().body("Email address already in use");
+        }
     }
 
     private void revokeAllUserTokens(User user) {
