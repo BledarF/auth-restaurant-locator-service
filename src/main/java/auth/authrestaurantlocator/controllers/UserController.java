@@ -10,12 +10,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.web.bind.annotation.*;
 
-import javax.naming.AuthenticationException;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -26,26 +24,29 @@ public class UserController {
 
     private final UserService userService;
 
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
+            System.out.println("dwd");
             AuthenticationResponse response = userService.authenticate(loginRequest);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (AuthenticationException ex) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid email or password");
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest){
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword())) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("Passwords don't match");
         }
-        User savedUser = userService.register(registerRequest);
-        return ResponseEntity.ok(savedUser);
+        ResponseEntity<String>  registerOutput = userService.register(registerRequest);
+        return registerOutput;
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/refresh-token")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
