@@ -8,6 +8,7 @@ import auth.authrestaurantlocator.services.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -24,13 +25,15 @@ public class UserController {
 
     private final UserService userService;
 
-    @CrossOrigin(origins = "http://localhost:3000")
+    @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            System.out.println("dwd");
             AuthenticationResponse response = userService.authenticate(loginRequest);
-            return ResponseEntity.ok(response);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Set-Cookie", "accessToken=" + response.getAccessToken() + "; Path=/; HttpOnly");
+            headers.add("Set-Cookie", "refreshToken=" + response.getRefreshToken() + "; Path=/; HttpOnly");
+            return ResponseEntity.ok().headers(headers).body(response);
         } catch (AuthenticationException ex) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid email or password");
         }
